@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能麥當勞聊天機器人</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', 'Noto Sans TC', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+        
+        .column {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .chat-column {
+            flex: 2;
+        }
+        
+        .food-column {
+            flex: 1;
+        }
+        
+        h1 {
+            color: #1a73e8;
+            margin-top: 0;
+        }
+        
+        #chat {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 15px;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        #userInput {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+            font-family: 'Microsoft JhengHei', 'Noto Sans TC', Arial, sans-serif;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        
+        .food-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: 'Microsoft JhengHei', 'Noto Sans TC', Arial, sans-serif;
+        }
+        
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Microsoft JhengHei', 'Noto Sans TC', Arial, sans-serif;
+        }
+        
+        button:hover {
+            background-color: #0d62c9;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-buttons button {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
+        .action-buttons .edit {
+            background-color: #ff9800;
+        }
+        
+        .action-buttons .delete {
+            background-color: #f44336;
+        }
+        
+        .error-message {
+            color: #f44336;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #1a73e8;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .examples {
+            margin-top: 15px;
+            background-color: #e8f0fe;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .examples h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+        
+        .example-item {
+            margin-bottom: 5px;
+            cursor: pointer;
+            color: #1a73e8;
+        }
+        
+        .example-item:hover {
+            text-decoration: underline;
+        }
+        
+        /* 添加動畫效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fadeIn {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="column chat-column">
+            <h1>麥當勞智能聊天機器人</h1>
+            <div>
+                <input type="text" id="userInput" placeholder="請輸入問題並按 Enter (例如：有什麼可以吃的？)" />
+            </div>
+            <div id="chat">等待訊息...</div>
+            
+            <div class="examples">
+                <h3>常見問題範例：</h3>
+                <div class="example-item" onclick="useExample('有什麼價格在50元以下的食物？')">有什麼價格在50元以下的食物？</div>
+                <div class="example-item" onclick="useExample('推薦一些人氣商品')">推薦一些人氣商品</div>
+                <div class="example-item" onclick="useExample('有什麼套餐推薦？')">有什麼套餐推薦？</div>
+                <div class="example-item" onclick="useExample('請問有素食選擇嗎？')">請問有素食選擇嗎？</div>
+            </div>
+        </div>
+        
+        <div class="column food-column">
+            <h1>食物與價格管理</h1>
+            
+            <div>
+                <h3>添加新食物</h3>
+                <div class="form-group">
+                    <label for="foodName">食物名稱</label>
+                    <input type="text" id="foodName" placeholder="輸入食物名稱">
+                </div>
+                <div class="form-group">
+                    <label for="foodPrice">價格</label>
+                    <input type="number" id="foodPrice" placeholder="輸入價格">
+                    <div id="priceError" class="error-message" style="display: none;">請輸入有效的價格</div>
+                </div>
+                <button id="addFoodBtn">添加食物</button>
+                <div id="successMessage" class="success-message">操作成功！</div>
+            </div>
+            
+            <div class="food-list">
+                <h3>食物列表</h3>
+                <table id="foodTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>品名</th>
+                            <th>價格 (元)</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="foodTableBody">
+                        <!-- 動態加載食物列表 -->
+                    </tbody>
+                </table>
+                <div id="loadingFoods" class="loading" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 編輯食物模態框 -->
+    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
+            <h3>編輯食物價格</h3>
+            <input type="hidden" id="editFoodId">
+            <div class="form-group">
+                <label for="editFoodName">食物名稱</label>
+                <input type="text" id="editFoodName" disabled>
+            </div>
+            <div class="form-group">
+                <label for="editFoodPrice">新價格</label>
+                <input type="number" id="editFoodPrice">
+                <div id="editPriceError" class="error-message" style="display: none;">請輸入有效的價格</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <button id="cancelEditBtn" style="background-color: #ccc;">取消</button>
+                <button id="saveEditBtn">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局變量
+        let eventSource;
+        const chatDiv = document.getElementById("chat");
+        const userInput = document.getElementById("userInput");
+        const foodTableBody = document.getElementById("foodTableBody");
+        const addFoodBtn = document.getElementById("addFoodBtn");
+        const editModal = document.getElementById("editModal");
+        const cancelEditBtn = document.getElementById("cancelEditBtn");
+        const saveEditBtn = document.getElementById("saveEditBtn");
+        const loadingFoods = document.getElementById("loadingFoods");
+        const successMessage = document.getElementById("successMessage");
+        
+        // 頁面加載時獲取食物列表
+        document.addEventListener("DOMContentLoaded", fetchFoods);
+        
+        // 添加食物
+        addFoodBtn.addEventListener("click", addFood);
+        
+        // 取消編輯
+        cancelEditBtn.addEventListener("click", function() {
+            editModal.style.display = "none";
+        });
+        
+        // 保存編輯
+        saveEditBtn.addEventListener("click", updateFoodPrice);
+        
+        // 範例問題點擊處理
+        function useExample(example) {
+            userInput.value = example;
+            userInput.focus();
+        }
+        
+        // 綁定聊天輸入框事件
+        userInput.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                const message = userInput.value.trim(); // 取得輸入的問題
+                
+                if (message) {
+                    sendMessage(message);
+                }
+            }
+        });
+        
+        // 發送消息函數
+        function sendMessage(message) {
+            // 清空輸入框
+            userInput.value = "";
+            
+            // 顯示用戶問題
+            chatDiv.innerHTML = `<div class="fadeIn">您: ${message}\n\n<div style="display: flex; align-items: center;">機器人: <div class="loading" style="margin-left: 10px;"></div></div></div>`;
+            
+            // 關閉之前的連線
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            // 建立新的 EventSource
+            eventSource = new EventSource('/chat?message=' + encodeURIComponent(message));
+            
+            // 清空回應內容
+            let botResponse = "";
+            
+            // 處理訊息接收
+            eventSource.onmessage = function(event) {
+                botResponse += event.data;
+                // 更新聊天框
+                chatDiv.innerHTML = `<div class="fadeIn">您: ${message}\n\n機器人: ${botResponse}</div>`;
+                // 自動滾動到底部
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            };
+            
+            // 處理錯誤
+            eventSource.onerror = function() {
+                console.error("接收訊息時發生錯誤");
+                chatDiv.innerHTML += `<div class="error-message">\n[錯誤] 無法接收訊息，請稍後再試</div>`;
+                eventSource.close();
+            };
+        }
+        
+        // 獲取所有食物列表
+        function fetchFoods() {
+            loadingFoods.style.display = "inline-block";
+            
+            fetch('/foods')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('獲取食物列表失敗');
+                    }
+                    return response.json();
+                })
+                .then(foods => {
+                    renderFoodTable(foods);
+                    loadingFoods.style.display = "none";
+                })
+                .catch(error => {
+                    console.error('Error fetching foods:', error);
+                    loadingFoods.style.display = "none";
+                    alert('獲取食物列表失敗: ' + error.message);
+                });
+        }
+        
+        // 渲染食物表格
+        function renderFoodTable(foods) {
+            foodTableBody.innerHTML = '';
+            
+            if (foods.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="4" style="text-align: center;">沒有食物資料</td>`;
+                foodTableBody.appendChild(row);
+                return;
+            }
+            
+            foods.forEach(food => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${food.id}</td>
+                    <td>${food.name}</td>
+                    <td>${food.price}</td>
+                    <td class="action-buttons">
+                        <button class="edit" onclick="editFood(${food.id}, '${food.name}', ${food.price})">編輯</button>
+                        <button class="delete" onclick="deleteFood(${food.id})">刪除</button>
+                    </td>
+                `;
+                
+                foodTableBody.appendChild(row);
+            });
+        }
+        
+        // 添加新食物
+        function addFood() {
+            const name = document.getElementById('foodName').value.trim();
+            const price = parseInt(document.getElementById('foodPrice').value);
+            const priceError = document.getElementById('priceError');
+            
+            if (!name) {
+                alert('請輸入食物名稱！');
+                return;
+            }
+            
+            if (isNaN(price) || price <= 0) {
+                priceError.style.display = "block";
+                return;
+            } else {
+                priceError.style.display = "none";
+            }
+            
+            addFoodBtn.disabled = true;
+            addFoodBtn.textContent = '添加中...';
+            
+            fetch('/foods', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    price: price
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('添加食物失敗');
+                }
+                return response.json();
+            })
+            .then(newFood => {
+                document.getElementById('foodName').value = '';
+                document.getElementById('foodPrice').value = '';
+                fetchFoods(); // 重新加載食物列表
+                
+                // 顯示成功訊息
+                showSuccessMessage('新食物添加成功！');
+                
+                addFoodBtn.disabled = false;
+                addFoodBtn.textContent = '添加食物';
+            })
+            .catch((error) => {
+                console.error('Error adding food:', error);
+                alert('添加食物失敗: ' + error.message);
+                addFoodBtn.disabled = false;
+                addFoodBtn.textContent = '添加食物';
+            });
+        }
+        
+        // 編輯食物價格
+        function editFood(id, name, price) {
+            document.getElementById('editFoodId').value = id;
+            document.getElementById('editFoodName').value = name;
+            document.getElementById('editFoodPrice').value = price;
+            
+            editModal.style.display = "flex";
+        }
+        
+        // 更新食物價格
+        function updateFoodPrice() {
+            const id = document.getElementById('editFoodId').value;
+            const price = parseInt(document.getElementById('editFoodPrice').value);
+            const editPriceError = document.getElementById('editPriceError');
+            
+            if (isNaN(price) || price <= 0) {
+                editPriceError.style.display = "block";
+                return;
+            } else {
+                editPriceError.style.display = "none";
+            }
+            
+            saveEditBtn.disabled = true;
+            saveEditBtn.textContent = '保存中...';
+            
+            fetch('/foods/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: id,
+                    price: price
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('更新食物價格失敗');
+                }
+                return response.json();
+            })
+            .then(updatedFood => {
+                editModal.style.display = "none";
+                fetchFoods(); // 重新加載食物列表
+                
+                // 顯示成功訊息
+                showSuccessMessage('食物價格更新成功！');
+                
+                saveEditBtn.disabled = false;
+                saveEditBtn.textContent = '保存';
+            })
+            .catch((error) => {
+                console.error('Error updating food:', error);
+                alert('更新食物價格失敗: ' + error.message);
+                saveEditBtn.disabled = false;
+                saveEditBtn.textContent = '保存';
+            });
+        }
+        
+        // 刪除食物
+        function deleteFood(id) {
+            if (confirm('確定要刪除這個食物嗎？')) {
+                fetch('/foods/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: id
+                    }),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('刪除食物失敗');
+                    }
+                    fetchFoods(); // 重新加載食物列表
+                    
+                    // 顯示成功訊息
+                    showSuccessMessage('食物已成功刪除！');
+                })
+                .catch((error) => {
+                    console.error('Error deleting food:', error);
+                    alert('刪除食物失敗: ' + error.message);
+                });
+            }
+        }
+        
+        // 顯示成功訊息
+        function showSuccessMessage(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = "block";
+            
+            // 3秒後自動隱藏
+            setTimeout(() => {
+                successMessage.style.display = "none";
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
