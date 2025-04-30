@@ -2,22 +2,21 @@
 
 這是一個使用 Spring AI 和 MySQL 資料庫構建的智能點餐助手，可以用繁體中文回答顧客關於麥當勞菜單和食物的問題。
 
-![麥當勞聊天機器人截圖](https://i.imgur.com/sample-screenshot.png)
 
 ## 功能特色
 
 - 🤖 **智能聊天**：使用 Spring AI 與 Ollama 模型整合，提供智能的繁體中文對話體驗
 - 🍔 **動態菜單管理**：從 MySQL 資料庫讀取並能夠動態增刪改查菜單項目
-- 💬 **流式回應**：使用 Server-Sent Events (SSE) 實現即時流式文字回應
+- 💬 **流式回應**：實現即時流式文字回應
 - 📱 **響應式設計**：適配桌面和移動設備的界面
 - 🛠️ **完整管理界面**：方便的菜單管理功能，包括添加、編輯和刪除食物項目
 
 ## 技術棧
 
-- **後端**：Spring Boot 3.4, Spring AI 1.0.0-M4
+- **後端**：Spring Boot , Spring AI , Java
 - **AI 模型**：Ollama (llama3)
 - **資料庫**：MySQL
-- **前端**：HTML, CSS, JavaScript (純原生，無框架)
+- **前端**：HTML, CSS, JavaScript 
 - **通訊**：Server-Sent Events (SSE)
 
 ## 快速開始
@@ -29,42 +28,8 @@
 - MySQL 數據庫
 - Ollama 服務 (支持 llama3 模型)
 
-### 安裝步驟
 
-1. **克隆倉庫**
 
-```bash
-git clone https://github.com/yourusername/mcdonalds-chatbot.git
-cd mcdonalds-chatbot
-```
-
-2. **配置數據庫**
-
-創建 MySQL 數據庫：
-
-```sql
-CREATE DATABASE chatbot_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-3. **修改配置文件**
-
-在 `src/main/resources/application.properties` 中更新數據庫連接信息：
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/chatbot_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-```
-
-4. **構建並運行應用**
-
-```bash
-mvn spring-boot:run
-```
-
-5. **訪問應用**
-
-打開瀏覽器訪問：`http://localhost:8080`
 
 ## 使用指南
 
@@ -121,19 +86,4 @@ spring.ai.ollama.chat.options.temperature=0.3
 spring.ai.ollama.chat.options.top_p=0.9
 ```
 
-## 貢獻指南
 
-1. Fork 此倉庫
-2. 創建您的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 開啟一個 Pull Request
-
-## 許可證
-
-本項目採用 MIT 許可證 - 詳情見 [LICENSE](LICENSE) 文件
-
-## 致謝
-
-- Spring AI 團隊提供的優秀框架
-- Ollama 項目提供的本地 AI 模型支持
